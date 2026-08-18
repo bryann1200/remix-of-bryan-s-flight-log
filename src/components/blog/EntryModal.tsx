@@ -21,10 +21,7 @@ export function EntryModal({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        showCloseButton
-        className="max-h-[88vh] max-w-2xl overflow-y-auto rounded-2xl border-hairline bg-card p-0"
-      >
+      <DialogContent className="max-h-[88vh] max-w-2xl overflow-y-auto rounded-2xl border-hairline bg-card p-0">
         <div className="h-1.5 w-full rounded-t-2xl" style={{ backgroundColor: cat.dot }} />
         <div className="p-7">
           <div className="meta flex flex-wrap items-center gap-2 text-ink-soft">
