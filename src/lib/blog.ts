@@ -50,7 +50,7 @@ export const CATEGORIES: {
 ];
 
 export function categoryMeta(key: string) {
-  return CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[0];
+  return CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[0]!;
 }
 
 const SIGNED_TTL = 60 * 60 * 24 * 7;
