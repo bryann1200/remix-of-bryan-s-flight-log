@@ -6,7 +6,6 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import {
   CATEGORIES,
-  categoryMeta,
   fetchBanner,
   fetchPosts,
   formatDate,
@@ -399,5 +398,3 @@ function Chip({
     </button>
   );
 }
-
-void categoryMeta;
