@@ -22,6 +22,9 @@ export function HeroFlightPath({ onActivate }: { onActivate: () => void }) {
   const ctrl = useRef({ x: BASE_CX, y: BASE_CY });
   const target = useRef({ x: BASE_CX, y: BASE_CY });
   const raf = useRef<number | null>(null);
+  const hovering = useRef(false);
+  const t0 = useRef(0);
+  const [plane, setPlane] = useState({ x: X0, y: Y0 });
   const [d, setD] = useState(`M ${X0} ${Y0} Q ${BASE_CX} ${BASE_CY} ${X1} ${Y1}`);
   const [marker, setMarker] = useState<{ x: number; y: number; alt: number; hdg: number } | null>(
     null,
@@ -41,11 +44,21 @@ export function HeroFlightPath({ onActivate }: { onActivate: () => void }) {
     };
 
     const tick = () => {
+      if (!hovering.current) {
+        if (t0.current === 0) t0.current = performance.now();
+        const el = (performance.now() - t0.current) / 1000;
+        target.current = {
+          x: BASE_CX + Math.sin(el * 0.55) * 34,
+          y: BASE_CY + Math.cos(el * 0.42) * 16,
+        };
+      }
       const c = ctrl.current;
       const t = target.current;
       c.x += (t.x - c.x) * 0.12;
       c.y += (t.y - c.y) * 0.12;
       setD(`M ${X0} ${Y0} Q ${c.x.toFixed(2)} ${c.y.toFixed(2)} ${X1} ${Y1}`);
+      const travel = ((performance.now() / 5200) % 1);
+      setPlane(quadPoint(travel, c.x, c.y));
       setMarker((prev) => {
         if (!prev) return prev;
         const tt = Math.min(1, Math.max(0, (prev.x - X0) / (X1 - X0)));
@@ -56,6 +69,7 @@ export function HeroFlightPath({ onActivate }: { onActivate: () => void }) {
     };
 
     const onMove = (event: PointerEvent) => {
+      hovering.current = true;
       const p = toLocal(event);
       target.current = {
         x: BASE_CX + (p.x - BASE_CX) * 0.32,
@@ -73,6 +87,8 @@ export function HeroFlightPath({ onActivate }: { onActivate: () => void }) {
     };
 
     const onLeave = () => {
+      hovering.current = false;
+      t0.current = performance.now();
       target.current = { x: BASE_CX, y: BASE_CY };
       setMarker(null);
     };
@@ -115,6 +131,12 @@ export function HeroFlightPath({ onActivate }: { onActivate: () => void }) {
         <style>{`@keyframes draw-in { from { stroke-dashoffset: 900 } to { stroke-dashoffset: 0 } }`}</style>
 
         <circle cx={X0} cy={Y0} r="3" fill="var(--ink-soft)" />
+        {!reduced && (
+          <g transform={`translate(${plane.x.toFixed(2)} ${plane.y.toFixed(2)})`}>
+            <circle r="10" fill="var(--primary)" opacity="0.1" />
+            <circle r="3" fill="var(--primary)" />
+          </g>
+        )}
         <circle
           cx={X1}
           cy={Y1}

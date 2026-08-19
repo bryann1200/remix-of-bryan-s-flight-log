@@ -21,6 +21,7 @@ export function NewEntryModal({
   const [logTime, setLogTime] = useState("");
   const [body, setBody] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [banner, setBanner] = useState<File | null>(null);
   const [links, setLinks] = useState<PostLink[]>([]);
   const [embedUrl, setEmbedUrl] = useState("");
   const [busy, setBusy] = useState(false);
@@ -33,6 +34,7 @@ export function NewEntryModal({
     setLogTime("");
     setBody("");
     setFiles([]);
+    setBanner(null);
     setLinks([]);
     setEmbedUrl("");
     setError(null);
@@ -44,6 +46,7 @@ export function NewEntryModal({
     try {
       const photos: string[] = [];
       for (const file of files) photos.push(await uploadMedia(file));
+      const bannerPath = banner ? await uploadMedia(banner) : null;
       const { error: err } = await supabase.from("posts").insert({
         title: title.trim(),
         category,
@@ -51,6 +54,7 @@ export function NewEntryModal({
         log_date: logDate,
         log_time: logTime ? logTime : null,
         photos,
+        banner: bannerPath,
         links: links.filter((l) => l.url.trim() !== ""),
         embed_url: embedUrl.trim() || null,
         published: publish,
@@ -152,6 +156,26 @@ export function NewEntryModal({
               placeholder="**bold**, *italic*, [link text](url), line breaks"
               className={`${fieldClass} resize-y`}
             />
+          </div>
+
+          <div>
+            <label className="meta text-ink-soft" htmlFor="f-banner">
+              Banner photo
+            </label>
+            <input
+              id="f-banner"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setBanner(e.target.files?.[0] ?? null)}
+              className="mt-1 block w-full text-sm text-ink-soft file:mr-3 file:rounded-full file:border file:border-hairline file:bg-background file:px-3 file:py-1.5 file:text-sm file:text-ink"
+            />
+            {banner && (
+              <img
+                src={URL.createObjectURL(banner)}
+                alt=""
+                className="mt-3 h-24 w-full rounded-lg border border-hairline object-cover"
+              />
+            )}
           </div>
 
           <div>

@@ -5,12 +5,10 @@ import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
-  CATEGORIES,
   fetchBanner,
   fetchPosts,
   formatDate,
   uploadMedia,
-  type CategoryKey,
   type Post,
 } from "@/lib/blog";
 import { HeroFlightPath } from "@/components/blog/HeroFlightPath";
@@ -44,10 +42,6 @@ function Index() {
   const [authOpen, setAuthOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [active, setActive] = useState<Post | null>(null);
-  const [cat, setCat] = useState<CategoryKey | "all">("all");
-  const [query, setQuery] = useState("");
-  const [order, setOrder] = useState<"new" | "old">("new");
-
   const boardRef = useRef<HTMLDivElement | null>(null);
   const pins = useRef<Map<string, HTMLDivElement>>(new Map());
   const bannerInput = useRef<HTMLInputElement | null>(null);
@@ -70,24 +64,7 @@ function Index() {
   const posts = useMemo(() => allPosts.filter((p) => p.published), [allPosts]);
   const drafts = useMemo(() => allPosts.filter((p) => !p.published), [allPosts]);
 
-  const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const list = posts.filter(
-      (p) =>
-        (cat === "all" || p.category === cat) &&
-        (q === "" ||
-          p.title.toLowerCase().includes(q) ||
-          p.body.toLowerCase().includes(q)),
-    );
-    return order === "new" ? list : [...list].reverse();
-  }, [posts, cat, query, order]);
-
-  const latest = useMemo(() => {
-    return posts.reduce<Post | null>((acc, p) => {
-      if (!acc) return p;
-      return `${p.log_date}${p.log_time ?? ""}` > `${acc.log_date}${acc.log_time ?? ""}` ? p : acc;
-    }, null);
-  }, [posts]);
+  const visible = posts;
 
   function refresh() {
     qc.invalidateQueries({ queryKey: ["posts"] });
@@ -136,21 +113,6 @@ function Index() {
           <a href="#top" className="text-sm font-semibold tracking-tight text-ink">
             Bryan&rsquo;s Adventures
           </a>
-          <div className="hidden items-center gap-6 md:flex">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.key}
-                type="button"
-                onClick={() => {
-                  setCat(c.key);
-                  scrollToBoard();
-                }}
-                className="meta text-ink-soft transition-colors hover:text-ink"
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
           <div className="flex items-center gap-2">
             {editMode && (
               <button
@@ -219,22 +181,11 @@ function Index() {
 
         {/* Hero */}
         <section className="mx-auto max-w-6xl px-5 pb-4 pt-14 text-center sm:pt-20">
-          <p className="meta text-ink-soft">A personal log</p>
-          <h1 className="mx-auto mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-ink sm:text-6xl">
+          <h1 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight text-ink sm:text-6xl">
             {TITLE}
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ink-soft sm:text-lg">
-            Building AI ventures, showing up to volunteer, and getting a little better each week.
-            Every entry is a note pinned to the board.
-          </p>
 
           <HeroFlightPath onActivate={scrollToBoard} />
-
-          {latest && (
-            <p className="meta mt-4 text-ink-soft">
-              Last logged {formatDate(latest.log_date, latest.log_time)}
-            </p>
-          )}
         </section>
 
         {/* Draft queue — owner only */}
@@ -298,56 +249,13 @@ function Index() {
           </section>
         )}
 
-        {/* Filters */}
-        <section
-          id="board"
-          className="frosted sticky top-[53px] z-30 mt-10 border-y border-hairline"
-        >
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-5 py-3">
-            <div className="flex flex-wrap gap-1.5">
-              <Chip active={cat === "all"} onClick={() => setCat("all")} label="All" />
-              {CATEGORIES.map((c) => (
-                <Chip
-                  key={c.key}
-                  active={cat === c.key}
-                  onClick={() => setCat(c.key)}
-                  label={c.label}
-                />
-              ))}
-            </div>
-            <div className="ml-auto flex items-center gap-2">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search entries"
-                aria-label="Search entries"
-                className="w-40 rounded-full border border-hairline bg-background px-3.5 py-1.5 text-sm text-ink outline-none focus:border-primary sm:w-56"
-              />
-              <button
-                type="button"
-                onClick={() => setOrder(order === "new" ? "old" : "new")}
-                className="meta rounded-full border border-hairline px-3 py-2 text-ink-soft hover:text-ink"
-              >
-                {order === "new" ? "Newest" : "Oldest"}
-              </button>
-            </div>
-          </div>
-        </section>
-
         {/* Corkboard */}
-        <section className="mx-auto max-w-6xl px-5 py-12">
-          <p className="meta text-ink-soft">
-            {visible.length} {visible.length === 1 ? "entry" : "entries"}
-          </p>
-
+        <section id="board" className="mx-auto max-w-6xl px-5 py-12">
           {postsQuery.isLoading ? (
             <p className="mt-10 text-sm text-ink-soft">Loading the board…</p>
           ) : visible.length === 0 ? (
             <div className="mt-12 rounded-2xl border border-dashed border-hairline p-14 text-center">
               <p className="hand text-3xl text-ink">Nothing pinned here yet</p>
-              <p className="mt-2 text-sm text-ink-soft">
-                Try another category or clear the search.
-              </p>
             </div>
           ) : (
             <div ref={boardRef} className="relative mt-6">
@@ -395,29 +303,5 @@ function Index() {
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <NewEntryModal open={newOpen} onClose={() => setNewOpen(false)} onSaved={refresh} />
     </div>
-  );
-}
-
-function Chip({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`meta flex items-center gap-1.5 rounded-full border px-3 py-2 transition-colors ${
-        active
-          ? "border-ink bg-ink text-background"
-          : "border-hairline text-ink-soft hover:text-ink"
-      }`}
-    >
-      {label}
-    </button>
   );
 }

@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       posts: {
         Row: {
+          banner: string | null
           body: string
           category: string
           created_at: string
@@ -30,6 +31,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          banner?: string | null
           body: string
           category: string
           created_at?: string
@@ -44,6 +46,7 @@ export type Database = {
           title: string
         }
         Update: {
+          banner?: string | null
           body?: string
           category?: string
           created_at?: string
