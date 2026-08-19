@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          color: string
+          created_at: string
+          key: string
+          label: string
+          sort: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          key: string
+          label: string
+          sort?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          key?: string
+          label?: string
+          sort?: number
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           banner: string | null
@@ -29,6 +53,7 @@ export type Database = {
           pinned: boolean
           published: boolean
           title: string
+          videos: Json
         }
         Insert: {
           banner?: string | null
@@ -44,6 +69,7 @@ export type Database = {
           pinned?: boolean
           published?: boolean
           title: string
+          videos?: Json
         }
         Update: {
           banner?: string | null
@@ -59,6 +85,7 @@ export type Database = {
           pinned?: boolean
           published?: boolean
           title?: string
+          videos?: Json
         }
         Relationships: []
       }
