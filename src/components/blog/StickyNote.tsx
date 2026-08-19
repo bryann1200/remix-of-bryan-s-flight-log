@@ -60,6 +60,14 @@ export function StickyNote({ post, index, editMode, onOpen, onRemove, pinRef }: 
           <span>{formatDate(post.log_date, post.log_time)}</span>
         </div>
 
+        {post.bannerUrl && (
+          <img
+            src={post.bannerUrl}
+            alt=""
+            className="mt-3 h-28 w-full rounded-[4px] border border-hairline/70 object-cover"
+          />
+        )}
+
         <h3 className="hand mt-2 text-[1.75rem] leading-[1.15] text-ink">{post.title}</h3>
 
         <p className="mt-2 text-[0.875rem] leading-relaxed text-ink-soft">
