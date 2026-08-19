@@ -44,10 +44,6 @@ function Index() {
   const [authOpen, setAuthOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [active, setActive] = useState<Post | null>(null);
-  const [cat, setCat] = useState<CategoryKey | "all">("all");
-  const [query, setQuery] = useState("");
-  const [order, setOrder] = useState<"new" | "old">("new");
-
   const boardRef = useRef<HTMLDivElement | null>(null);
   const pins = useRef<Map<string, HTMLDivElement>>(new Map());
   const bannerInput = useRef<HTMLInputElement | null>(null);
@@ -70,24 +66,7 @@ function Index() {
   const posts = useMemo(() => allPosts.filter((p) => p.published), [allPosts]);
   const drafts = useMemo(() => allPosts.filter((p) => !p.published), [allPosts]);
 
-  const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const list = posts.filter(
-      (p) =>
-        (cat === "all" || p.category === cat) &&
-        (q === "" ||
-          p.title.toLowerCase().includes(q) ||
-          p.body.toLowerCase().includes(q)),
-    );
-    return order === "new" ? list : [...list].reverse();
-  }, [posts, cat, query, order]);
-
-  const latest = useMemo(() => {
-    return posts.reduce<Post | null>((acc, p) => {
-      if (!acc) return p;
-      return `${p.log_date}${p.log_time ?? ""}` > `${acc.log_date}${acc.log_time ?? ""}` ? p : acc;
-    }, null);
-  }, [posts]);
+  const visible = posts;
 
   function refresh() {
     qc.invalidateQueries({ queryKey: ["posts"] });
