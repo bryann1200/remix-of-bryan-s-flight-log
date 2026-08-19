@@ -223,18 +223,73 @@ function Index() {
 
           <HeroFlightPath onActivate={scrollToBoard} />
 
-          <div className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-4">
-            <Stat label="Entries" value={String(posts.length)} />
-            {stats.counts.map((c) => (
-              <Stat key={c.label} label={c.label} value={String(c.value)} dot={c.dot} />
-            ))}
-          </div>
-          {stats.latest && (
+          {latest && (
             <p className="meta mt-4 text-ink-soft">
-              Last logged {formatDate(stats.latest.log_date, stats.latest.log_time)}
+              Last logged {formatDate(latest.log_date, latest.log_time)}
             </p>
           )}
         </section>
+
+        {/* Draft queue — owner only */}
+        {editMode && (
+          <section className="mx-auto mt-12 max-w-6xl px-5">
+            <div className="rounded-2xl border border-hairline bg-card p-6">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-lg font-bold tracking-tight text-ink">
+                  Draft queue{drafts.length > 0 ? ` · ${drafts.length}` : ""}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setNewOpen(true)}
+                  className="meta rounded-full border border-hairline px-3 py-2 text-ink-soft hover:text-ink"
+                >
+                  Write a draft
+                </button>
+              </div>
+              {drafts.length === 0 ? (
+                <p className="mt-3 text-sm text-ink-soft">
+                  No drafts. Anything you save as a draft stays private until you publish it.
+                </p>
+              ) : (
+                <ul className="mt-4 divide-y divide-hairline">
+                  {drafts.map((post) => (
+                    <li
+                      key={post.id}
+                      className="flex flex-wrap items-center justify-between gap-3 py-3"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setActive(post)}
+                        className="text-left text-sm font-medium text-ink hover:opacity-70"
+                      >
+                        {post.title}
+                        <span className="meta ml-2 text-ink-soft">
+                          {formatDate(post.log_date, post.log_time)}
+                        </span>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => publishPost(post)}
+                          className="rounded-full bg-ink px-4 py-1.5 text-sm font-medium text-background transition-opacity hover:opacity-85"
+                        >
+                          Publish
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removePost(post)}
+                          className="meta rounded-full border border-hairline px-3 py-2 text-ink-soft hover:text-ink"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Filters */}
         <section
