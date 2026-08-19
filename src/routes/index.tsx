@@ -415,6 +415,7 @@ function Index() {
         onClose={() => setActive(null)}
         onTogglePin={togglePin}
         onRemove={removePost}
+        onTogglePublish={(p) => (p.published ? unpublishPost(p) : publishPost(p))}
       />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <NewEntryModal open={newOpen} onClose={() => setNewOpen(false)} onSaved={refresh} />
