@@ -219,22 +219,11 @@ function Index() {
 
         {/* Hero */}
         <section className="mx-auto max-w-6xl px-5 pb-4 pt-14 text-center sm:pt-20">
-          <p className="meta text-ink-soft">A personal log</p>
-          <h1 className="mx-auto mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-ink sm:text-6xl">
+          <h1 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight text-ink sm:text-6xl">
             {TITLE}
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ink-soft sm:text-lg">
-            Building AI ventures, showing up to volunteer, and getting a little better each week.
-            Every entry is a note pinned to the board.
-          </p>
 
           <HeroFlightPath onActivate={scrollToBoard} />
-
-          {latest && (
-            <p className="meta mt-4 text-ink-soft">
-              Last logged {formatDate(latest.log_date, latest.log_time)}
-            </p>
-          )}
         </section>
 
         {/* Draft queue — owner only */}
