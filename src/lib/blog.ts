@@ -16,6 +16,7 @@ export type Post = {
   links: PostLink[];
   embed_url: string | null;
   pinned: boolean;
+  published: boolean;
   created_at: string;
 };
 
