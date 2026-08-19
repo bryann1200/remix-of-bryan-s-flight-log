@@ -55,10 +55,6 @@ export function StickyNote({ post, index, editMode, onOpen, onRemove, pinRef }: 
         />
 
         <div className="meta flex flex-wrap items-center gap-2 text-ink-soft">
-          <span
-            className="inline-block h-[7px] w-[7px] rounded-full"
-            style={{ backgroundColor: cat.dot }}
-          />
           <span style={{ color: cat.text }}>{cat.label}</span>
           <span className="text-hairline">/</span>
           <span>{formatDate(post.log_date, post.log_time)}</span>

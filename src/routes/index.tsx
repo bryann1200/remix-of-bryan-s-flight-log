@@ -312,7 +312,6 @@ function Index() {
                   active={cat === c.key}
                   onClick={() => setCat(c.key)}
                   label={c.label}
-                  dot={c.dot}
                 />
               ))}
             </div>
@@ -380,32 +379,8 @@ function Index() {
       </main>
 
       <footer className="border-t border-hairline">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-10">
-          <div>
-            <p className="text-sm font-medium text-ink">{TITLE}</p>
-            <p className="meta mt-2 text-ink-soft">
-              © {new Date().getFullYear()} Bryan · Written by hand, pinned with care
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
-            {CATEGORIES.map((c) => (
-              <span key={c.key} className="meta flex items-center gap-1.5 text-ink-soft">
-                <span
-                  className="inline-block h-[7px] w-[7px] rounded-full"
-                  style={{ backgroundColor: c.dot }}
-                />
-                {c.label}
-              </span>
-            ))}
-            <a
-              href="/api/public/rss"
-              className="meta text-primary hover:opacity-70"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              RSS
-            </a>
-          </div>
+        <div className="mx-auto max-w-6xl px-5 py-10">
+          <p className="text-sm font-medium text-ink">{TITLE}</p>
         </div>
       </footer>
 
@@ -427,12 +402,10 @@ function Chip({
   active,
   onClick,
   label,
-  dot,
 }: {
   active: boolean;
   onClick: () => void;
   label: string;
-  dot?: string;
 }) {
   return (
     <button
@@ -444,12 +417,6 @@ function Chip({
           : "border-hairline text-ink-soft hover:text-ink"
       }`}
     >
-      {dot && (
-        <span
-          className="inline-block h-[7px] w-[7px] rounded-full"
-          style={{ backgroundColor: dot }}
-        />
-      )}
       {label}
     </button>
   );
