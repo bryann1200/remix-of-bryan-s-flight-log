@@ -50,7 +50,14 @@ function Index() {
   const bannerInput = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    supabase.auth.getSession().then(({ data }) => {
+      const s = data.session;
+      if (s && !isOwnerEmail(s.user?.email)) {
+        void supabase.auth.signOut();
+        return;
+      }
+      setSession(s);
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       if (s && !isOwnerEmail(s.user?.email)) {
         setSession(null);
