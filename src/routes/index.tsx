@@ -163,10 +163,17 @@ function Index() {
             )}
             <button
               type="button"
-              onClick={() => (editMode ? supabase.auth.signOut() : setAuthOpen(true))}
+              onClick={async () => {
+                if (editMode) {
+                  await supabase.auth.signOut();
+                  qc.invalidateQueries({ queryKey: ["posts"] });
+                } else {
+                  setAuthOpen(true);
+                }
+              }}
               className="meta rounded-full border border-hairline px-3 py-2 text-ink-soft transition-colors hover:text-ink"
             >
-              {editMode ? "Owner mode · Lock" : "Unlock"}
+              {editMode ? "Sign out" : "Sign in"}
             </button>
           </div>
         </nav>
@@ -411,23 +418,6 @@ function Index() {
       />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <NewEntryModal open={newOpen} onClose={() => setNewOpen(false)} onSaved={refresh} />
-    </div>
-  );
-}
-
-function Stat({ label, value, dot }: { label: string; value: string; dot?: string }) {
-  return (
-    <div className="bg-background px-4 py-5">
-      <p className="text-2xl font-semibold tracking-tight text-ink">{value}</p>
-      <p className="meta mt-1.5 flex items-center justify-center gap-1.5 text-ink-soft">
-        {dot && (
-          <span
-            className="inline-block h-[7px] w-[7px] rounded-full"
-            style={{ backgroundColor: dot }}
-          />
-        )}
-        {label}
-      </p>
     </div>
   );
 }
