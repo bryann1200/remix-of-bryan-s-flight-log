@@ -16,6 +16,7 @@ export type Post = {
   links: PostLink[];
   embed_url: string | null;
   pinned: boolean;
+  published: boolean;
   created_at: string;
 };
 
@@ -104,6 +105,7 @@ export async function fetchPosts(): Promise<Post[]> {
         links: asArray<PostLink>(r.links),
         embed_url: r.embed_url,
         pinned: r.pinned,
+        published: r.published,
         created_at: r.created_at,
       };
     }),

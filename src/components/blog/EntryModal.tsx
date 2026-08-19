@@ -8,12 +8,14 @@ export function EntryModal({
   onClose,
   onTogglePin,
   onRemove,
+  onTogglePublish,
 }: {
   post: Post | null;
   editMode: boolean;
   onClose: () => void;
   onTogglePin: (post: Post) => void;
   onRemove: (post: Post) => void;
+  onTogglePublish: (post: Post) => void;
 }) {
   if (!post) return null;
   const cat = categoryMeta(post.category);
@@ -103,6 +105,13 @@ export function EntryModal({
 
           {editMode && (
             <div className="mt-8 flex flex-wrap gap-3 border-t border-hairline pt-5">
+              <button
+                type="button"
+                onClick={() => onTogglePublish(post)}
+                className="meta rounded-full border border-hairline px-4 py-2 text-ink hover:bg-secondary"
+              >
+                {post.published ? "Move back to drafts" : "Publish entry"}
+              </button>
               <button
                 type="button"
                 onClick={() => onTogglePin(post)}

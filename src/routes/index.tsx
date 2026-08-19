@@ -54,16 +54,21 @@ function Index() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+      qc.invalidateQueries({ queryKey: ["posts"] });
+    });
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [qc]);
 
   const editMode = !!session;
 
   const postsQuery = useQuery({ queryKey: ["posts"], queryFn: fetchPosts });
   const bannerQuery = useQuery({ queryKey: ["banner"], queryFn: fetchBanner });
 
-  const posts = useMemo(() => postsQuery.data ?? [], [postsQuery.data]);
+  const allPosts = useMemo(() => postsQuery.data ?? [], [postsQuery.data]);
+  const posts = useMemo(() => allPosts.filter((p) => p.published), [allPosts]);
+  const drafts = useMemo(() => allPosts.filter((p) => !p.published), [allPosts]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -77,21 +82,26 @@ function Index() {
     return order === "new" ? list : [...list].reverse();
   }, [posts, cat, query, order]);
 
-  const stats = useMemo(() => {
-    const counts = CATEGORIES.map((c) => ({
-      label: c.label,
-      dot: c.dot,
-      value: posts.filter((p) => p.category === c.key).length,
-    }));
-    const latest = posts.reduce<Post | null>((acc, p) => {
+  const latest = useMemo(() => {
+    return posts.reduce<Post | null>((acc, p) => {
       if (!acc) return p;
       return `${p.log_date}${p.log_time ?? ""}` > `${acc.log_date}${acc.log_time ?? ""}` ? p : acc;
     }, null);
-    return { counts, latest };
   }, [posts]);
 
   function refresh() {
     qc.invalidateQueries({ queryKey: ["posts"] });
+  }
+
+  async function publishPost(post: Post) {
+    await supabase.from("posts").update({ published: true }).eq("id", post.id);
+    refresh();
+  }
+
+  async function unpublishPost(post: Post) {
+    await supabase.from("posts").update({ published: false }).eq("id", post.id);
+    setActive(null);
+    refresh();
   }
 
   async function removePost(post: Post) {
@@ -153,10 +163,17 @@ function Index() {
             )}
             <button
               type="button"
-              onClick={() => (editMode ? supabase.auth.signOut() : setAuthOpen(true))}
+              onClick={async () => {
+                if (editMode) {
+                  await supabase.auth.signOut();
+                  qc.invalidateQueries({ queryKey: ["posts"] });
+                } else {
+                  setAuthOpen(true);
+                }
+              }}
               className="meta rounded-full border border-hairline px-3 py-2 text-ink-soft transition-colors hover:text-ink"
             >
-              {editMode ? "Owner mode · Lock" : "Unlock"}
+              {editMode ? "Sign out" : "Sign in"}
             </button>
           </div>
         </nav>
@@ -213,18 +230,73 @@ function Index() {
 
           <HeroFlightPath onActivate={scrollToBoard} />
 
-          <div className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-4">
-            <Stat label="Entries" value={String(posts.length)} />
-            {stats.counts.map((c) => (
-              <Stat key={c.label} label={c.label} value={String(c.value)} dot={c.dot} />
-            ))}
-          </div>
-          {stats.latest && (
+          {latest && (
             <p className="meta mt-4 text-ink-soft">
-              Last logged {formatDate(stats.latest.log_date, stats.latest.log_time)}
+              Last logged {formatDate(latest.log_date, latest.log_time)}
             </p>
           )}
         </section>
+
+        {/* Draft queue — owner only */}
+        {editMode && (
+          <section className="mx-auto mt-12 max-w-6xl px-5">
+            <div className="rounded-2xl border border-hairline bg-card p-6">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-lg font-bold tracking-tight text-ink">
+                  Draft queue{drafts.length > 0 ? ` · ${drafts.length}` : ""}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setNewOpen(true)}
+                  className="meta rounded-full border border-hairline px-3 py-2 text-ink-soft hover:text-ink"
+                >
+                  Write a draft
+                </button>
+              </div>
+              {drafts.length === 0 ? (
+                <p className="mt-3 text-sm text-ink-soft">
+                  No drafts. Anything you save as a draft stays private until you publish it.
+                </p>
+              ) : (
+                <ul className="mt-4 divide-y divide-hairline">
+                  {drafts.map((post) => (
+                    <li
+                      key={post.id}
+                      className="flex flex-wrap items-center justify-between gap-3 py-3"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setActive(post)}
+                        className="text-left text-sm font-medium text-ink hover:opacity-70"
+                      >
+                        {post.title}
+                        <span className="meta ml-2 text-ink-soft">
+                          {formatDate(post.log_date, post.log_time)}
+                        </span>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => publishPost(post)}
+                          className="rounded-full bg-ink px-4 py-1.5 text-sm font-medium text-background transition-opacity hover:opacity-85"
+                        >
+                          Publish
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removePost(post)}
+                          className="meta rounded-full border border-hairline px-3 py-2 text-ink-soft hover:text-ink"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Filters */}
         <section
@@ -343,26 +415,10 @@ function Index() {
         onClose={() => setActive(null)}
         onTogglePin={togglePin}
         onRemove={removePost}
+        onTogglePublish={(p) => (p.published ? unpublishPost(p) : publishPost(p))}
       />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <NewEntryModal open={newOpen} onClose={() => setNewOpen(false)} onSaved={refresh} />
-    </div>
-  );
-}
-
-function Stat({ label, value, dot }: { label: string; value: string; dot?: string }) {
-  return (
-    <div className="bg-background px-4 py-5">
-      <p className="text-2xl font-semibold tracking-tight text-ink">{value}</p>
-      <p className="meta mt-1.5 flex items-center justify-center gap-1.5 text-ink-soft">
-        {dot && (
-          <span
-            className="inline-block h-[7px] w-[7px] rounded-full"
-            style={{ backgroundColor: dot }}
-          />
-        )}
-        {label}
-      </p>
     </div>
   );
 }
