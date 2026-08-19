@@ -52,10 +52,10 @@
   --color-cat-growth: var(--cat-growth);
   --color-cat-growth-tint: var(--cat-growth-tint);
 
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-  --font-hand: "Caveat", "Segoe Script", cursive;
+  --font-sans: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono: "Space Grotesk", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-hand: "Space Grotesk", -apple-system, sans-serif;
 
   --shadow-note: 0 1px 2px oklch(0 0 0 / 6%), 0 8px 20px -12px oklch(0 0 0 / 22%);
   --shadow-note-lift: 0 2px 4px oklch(0 0 0 / 8%), 0 22px 40px -18px oklch(0 0 0 / 30%);
@@ -126,7 +126,8 @@
   h1,
   h2,
   h3 {
-    letter-spacing: -0.022em;
+    letter-spacing: -0.035em;
+    font-weight: 700;
   }
 }
 
@@ -141,7 +142,7 @@
 @utility hand {
   font-family: var(--font-hand);
   font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: -0.035em;
 }
 
 @utility frosted {
