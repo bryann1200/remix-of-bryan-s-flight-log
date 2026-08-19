@@ -24,6 +24,8 @@ export const Route = createFileRoute("/api/public/rss")({
             ...r,
             photos: [],
             photoUrls: [],
+            videos: [],
+            videoUrls: [],
             banner: null,
             bannerUrl: null,
             links: [],
