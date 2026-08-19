@@ -1,4 +1,4 @@
-import { categoryMeta, formatDate, tiltFor, type Post } from "@/lib/blog";
+import { categoryMeta, formatDate, isVideoPath, tiltFor, type Post } from "@/lib/blog";
 import { plainExcerpt } from "@/components/blog/Markdown";
 
 type Props = {
@@ -7,10 +7,21 @@ type Props = {
   editMode: boolean;
   onOpen: () => void;
   onRemove: () => void;
+  onEdit?: () => void;
+  onTogglePin?: () => void;
   pinRef: (el: HTMLDivElement | null) => void;
 };
 
-export function StickyNote({ post, index, editMode, onOpen, onRemove, pinRef }: Props) {
+export function StickyNote({
+  post,
+  index,
+  editMode,
+  onOpen,
+  onRemove,
+  onEdit,
+  onTogglePin,
+  pinRef,
+}: Props) {
   const cat = categoryMeta(post.category);
   const tilt = tiltFor(post.id);
 
@@ -41,7 +52,7 @@ export function StickyNote({ post, index, editMode, onOpen, onRemove, pinRef }: 
         onMouseLeave={(e) => (e.currentTarget.style.transform = `rotate(${tilt}deg)`)}
       >
         {post.pinned && (
-          <span className="meta absolute right-4 top-3 text-ink-soft">Featured</span>
+          <span className="meta absolute right-4 top-3 text-ink-soft">Pinned</span>
         )}
 
         <div
@@ -60,13 +71,22 @@ export function StickyNote({ post, index, editMode, onOpen, onRemove, pinRef }: 
           <span>{formatDate(post.log_date, post.log_time)}</span>
         </div>
 
-        {post.bannerUrl && (
+        {post.bannerUrl && isVideoPath(post.banner) ? (
+          <video
+            src={post.bannerUrl}
+            muted
+            loop
+            autoPlay
+            playsInline
+            className="mt-3 h-28 w-full rounded-[4px] border border-hairline/70 bg-black object-cover"
+          />
+        ) : post.bannerUrl ? (
           <img
             src={post.bannerUrl}
             alt=""
             className="mt-3 h-28 w-full rounded-[4px] border border-hairline/70 object-cover"
           />
-        )}
+        ) : null}
 
         <h3 className="hand mt-2 text-[1.75rem] leading-[1.15] text-ink">{post.title}</h3>
 
@@ -90,6 +110,11 @@ export function StickyNote({ post, index, editMode, onOpen, onRemove, pinRef }: 
 
         {(post.links.length > 0 || post.embed_url) && (
           <div className="mt-4 flex flex-wrap gap-1.5">
+            {post.videoUrls.length > 0 && (
+              <span className="meta rounded-full border border-hairline bg-card px-2 py-1 text-ink-soft">
+                Video
+              </span>
+            )}
             {post.embed_url && (
               <span className="meta rounded-full border border-hairline bg-card px-2 py-1 text-ink-soft">
                 Embed
@@ -109,16 +134,38 @@ export function StickyNote({ post, index, editMode, onOpen, onRemove, pinRef }: 
         <div className="mt-5 flex items-center justify-between border-t border-hairline/70 pt-3">
           <span className="meta text-ink">Read entry →</span>
           {editMode && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemove();
-              }}
-              className="meta text-destructive hover:opacity-70"
-            >
-              Remove
-            </button>
+            <span className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTogglePin?.();
+                }}
+                className="meta text-ink-soft hover:text-ink"
+              >
+                {post.pinned ? "Unpin" : "Pin"}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.();
+                }}
+                className="meta text-ink-soft hover:text-ink"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove();
+                }}
+                className="meta text-destructive hover:opacity-70"
+              >
+                Remove
+              </button>
+            </span>
           )}
         </div>
       </article>

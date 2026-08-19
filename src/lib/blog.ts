@@ -80,7 +80,12 @@ export async function fetchCategories(): Promise<Category[]> {
   return CATEGORIES;
 }
 
-export async function saveCategory(input: { key: string; label: string; color: string; sort?: number }) {
+export async function saveCategory(input: {
+  key: string;
+  label: string;
+  color: string;
+  sort?: number | undefined;
+}) {
   const { error } = await supabase.from("categories").upsert({
     key: input.key,
     label: input.label,
