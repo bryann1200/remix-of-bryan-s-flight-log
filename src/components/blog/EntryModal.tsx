@@ -40,6 +40,14 @@ export function EntryModal({
 
           <h2 className="hand mt-3 text-4xl leading-tight text-ink">{post.title}</h2>
 
+          {post.bannerUrl && (
+            <img
+              src={post.bannerUrl}
+              alt=""
+              className="mt-5 h-48 w-full rounded-xl border border-hairline object-cover sm:h-64"
+            />
+          )}
+
           {post.photoUrls.length > 0 && (
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {post.photoUrls.map((url) => (
