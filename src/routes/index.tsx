@@ -115,21 +115,6 @@ function Index() {
           <a href="#top" className="text-sm font-semibold tracking-tight text-ink">
             Bryan&rsquo;s Adventures
           </a>
-          <div className="hidden items-center gap-6 md:flex">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.key}
-                type="button"
-                onClick={() => {
-                  setCat(c.key);
-                  scrollToBoard();
-                }}
-                className="meta text-ink-soft transition-colors hover:text-ink"
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
           <div className="flex items-center gap-2">
             {editMode && (
               <button
