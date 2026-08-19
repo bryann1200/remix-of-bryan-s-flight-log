@@ -36,11 +36,11 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-sm rounded-2xl border-hairline bg-card p-7">
         <p className="meta text-ink-soft">Owner access</p>
-        <h2 className="mt-2 text-xl font-semibold tracking-tight text-ink">
-          {mode === "in" ? "Unlock editing" : "Create the owner account"}
+        <h2 className="mt-2 text-xl font-bold tracking-tight text-ink">
+          {mode === "in" ? "Sign in" : "Create the owner account"}
         </h2>
         <p className="mt-1 text-sm text-ink-soft">
-          Reading is open to everyone. Writing requires the owner account.
+          Anyone can read the blog. Signing in lets you write, draft and publish.
         </p>
 
         <form onSubmit={submit} className="mt-5 space-y-3">
@@ -79,7 +79,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
             disabled={busy}
             className="w-full rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-85 disabled:opacity-50"
           >
-            {busy ? "Working…" : mode === "in" ? "Unlock" : "Create account"}
+            {busy ? "Working…" : mode === "in" ? "Sign in" : "Create account"}
           </button>
         </form>
 
@@ -88,7 +88,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
           onClick={() => setMode(mode === "in" ? "up" : "in")}
           className="meta mt-4 text-ink-soft hover:text-ink"
         >
-          {mode === "in" ? "First time? Create the owner account" : "Back to unlock"}
+          {mode === "in" ? "First time? Create the owner account" : "Back to sign in"}
         </button>
       </DialogContent>
     </Dialog>
