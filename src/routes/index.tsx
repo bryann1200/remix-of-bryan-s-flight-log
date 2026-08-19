@@ -402,12 +402,10 @@ function Chip({
   active,
   onClick,
   label,
-  dot,
 }: {
   active: boolean;
   onClick: () => void;
   label: string;
-  dot?: string;
 }) {
   return (
     <button
@@ -419,12 +417,6 @@ function Chip({
           : "border-hairline text-ink-soft hover:text-ink"
       }`}
     >
-      {dot && (
-        <span
-          className="inline-block h-[7px] w-[7px] rounded-full"
-          style={{ backgroundColor: dot }}
-        />
-      )}
       {label}
     </button>
   );
