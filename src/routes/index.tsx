@@ -287,56 +287,13 @@ function Index() {
           </section>
         )}
 
-        {/* Filters */}
-        <section
-          id="board"
-          className="frosted sticky top-[53px] z-30 mt-10 border-y border-hairline"
-        >
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-5 py-3">
-            <div className="flex flex-wrap gap-1.5">
-              <Chip active={cat === "all"} onClick={() => setCat("all")} label="All" />
-              {CATEGORIES.map((c) => (
-                <Chip
-                  key={c.key}
-                  active={cat === c.key}
-                  onClick={() => setCat(c.key)}
-                  label={c.label}
-                />
-              ))}
-            </div>
-            <div className="ml-auto flex items-center gap-2">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search entries"
-                aria-label="Search entries"
-                className="w-40 rounded-full border border-hairline bg-background px-3.5 py-1.5 text-sm text-ink outline-none focus:border-primary sm:w-56"
-              />
-              <button
-                type="button"
-                onClick={() => setOrder(order === "new" ? "old" : "new")}
-                className="meta rounded-full border border-hairline px-3 py-2 text-ink-soft hover:text-ink"
-              >
-                {order === "new" ? "Newest" : "Oldest"}
-              </button>
-            </div>
-          </div>
-        </section>
-
         {/* Corkboard */}
-        <section className="mx-auto max-w-6xl px-5 py-12">
-          <p className="meta text-ink-soft">
-            {visible.length} {visible.length === 1 ? "entry" : "entries"}
-          </p>
-
+        <section id="board" className="mx-auto max-w-6xl px-5 py-12">
           {postsQuery.isLoading ? (
             <p className="mt-10 text-sm text-ink-soft">Loading the board…</p>
           ) : visible.length === 0 ? (
             <div className="mt-12 rounded-2xl border border-dashed border-hairline p-14 text-center">
               <p className="hand text-3xl text-ink">Nothing pinned here yet</p>
-              <p className="mt-2 text-sm text-ink-soft">
-                Try another category or clear the search.
-              </p>
             </div>
           ) : (
             <div ref={boardRef} className="relative mt-6">
