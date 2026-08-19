@@ -26,6 +26,7 @@ export type Database = {
           log_time: string | null
           photos: Json
           pinned: boolean
+          published: boolean
           title: string
         }
         Insert: {
@@ -39,6 +40,7 @@ export type Database = {
           log_time?: string | null
           photos?: Json
           pinned?: boolean
+          published?: boolean
           title: string
         }
         Update: {
@@ -52,6 +54,7 @@ export type Database = {
           log_time?: string | null
           photos?: Json
           pinned?: boolean
+          published?: boolean
           title?: string
         }
         Relationships: []
