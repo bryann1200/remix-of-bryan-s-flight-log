@@ -5,12 +5,10 @@ import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
-  CATEGORIES,
   fetchBanner,
   fetchPosts,
   formatDate,
   uploadMedia,
-  type CategoryKey,
   type Post,
 } from "@/lib/blog";
 import { HeroFlightPath } from "@/components/blog/HeroFlightPath";
@@ -305,29 +303,5 @@ function Index() {
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <NewEntryModal open={newOpen} onClose={() => setNewOpen(false)} onSaved={refresh} />
     </div>
-  );
-}
-
-function Chip({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`meta flex items-center gap-1.5 rounded-full border px-3 py-2 transition-colors ${
-        active
-          ? "border-ink bg-ink text-background"
-          : "border-hairline text-ink-soft hover:text-ink"
-      }`}
-    >
-      {label}
-    </button>
   );
 }
