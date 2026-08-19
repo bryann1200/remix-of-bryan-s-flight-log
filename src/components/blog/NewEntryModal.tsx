@@ -38,8 +38,7 @@ export function NewEntryModal({
     setError(null);
   }
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function save(publish: boolean) {
     setBusy(true);
     setError(null);
     try {
@@ -54,6 +53,7 @@ export function NewEntryModal({
         photos,
         links: links.filter((l) => l.url.trim() !== ""),
         embed_url: embedUrl.trim() || null,
+        published: publish,
       });
       if (err) throw err;
       reset();
@@ -66,11 +66,19 @@ export function NewEntryModal({
     }
   }
 
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    void save(false);
+  }
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[88vh] max-w-xl overflow-y-auto rounded-2xl border-hairline bg-card p-7">
         <p className="meta text-ink-soft">New log entry</p>
-        <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink">Add to the board</h2>
+        <h2 className="mt-1 text-xl font-bold tracking-tight text-ink">Write an entry</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Save it as a draft to keep it private, or publish it straight to the board.
+        </p>
 
         <form onSubmit={submit} className="mt-5 space-y-4">
           <div>
@@ -251,9 +259,17 @@ export function NewEntryModal({
             <button
               type="submit"
               disabled={busy}
+              className="rounded-full border border-hairline px-5 py-2 text-sm font-medium text-ink hover:bg-secondary disabled:opacity-50"
+            >
+              {busy ? "Saving…" : "Save as draft"}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void save(true)}
               className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-85 disabled:opacity-50"
             >
-              {busy ? "Saving…" : "Publish entry"}
+              {busy ? "Saving…" : "Publish now"}
             </button>
           </div>
         </form>
