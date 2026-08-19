@@ -13,6 +13,8 @@ export type Post = {
   log_time: string | null;
   photos: string[];
   photoUrls: string[];
+  videos: string[];
+  videoUrls: string[];
   banner: string | null;
   bannerUrl: string | null;
   links: PostLink[];
@@ -22,13 +24,17 @@ export type Post = {
   created_at: string;
 };
 
-export const CATEGORIES: {
-  key: CategoryKey;
+export type Category = {
+  key: string;
   label: string;
   dot: string;
   tint: string;
   text: string;
-}[] = [
+  color?: string;
+  sort?: number;
+};
+
+export const DEFAULT_CATEGORIES: Category[] = [
   {
     key: "ai",
     label: "AI Ventures",
@@ -52,8 +58,55 @@ export const CATEGORIES: {
   },
 ];
 
-export function categoryMeta(key: string) {
-  return CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[0]!;
+/** Categories are editable, so the fetched list is cached here for sync lookups. */
+export let CATEGORIES: Category[] = DEFAULT_CATEGORIES;
+
+function toCategory(row: { key: string; label: string; color: string; sort: number }): Category {
+  return {
+    key: row.key,
+    label: row.label,
+    color: row.color,
+    sort: row.sort,
+    dot: row.color,
+    text: row.color,
+    tint: `color-mix(in oklab, ${row.color} 9%, white)`,
+  };
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  const { data, error } = await supabase.from("categories").select("*").order("sort");
+  if (error || !data || data.length === 0) return DEFAULT_CATEGORIES;
+  CATEGORIES = data.map(toCategory);
+  return CATEGORIES;
+}
+
+export async function saveCategory(input: {
+  key: string;
+  label: string;
+  color: string;
+  sort?: number | undefined;
+}) {
+  const { error } = await supabase.from("categories").upsert({
+    key: input.key,
+    label: input.label,
+    color: input.color,
+    sort: input.sort ?? 99,
+  });
+  if (error) throw error;
+}
+
+export async function deleteCategory(key: string) {
+  const { error } = await supabase.from("categories").delete().eq("key", key);
+  if (error) throw error;
+}
+
+export function categoryMeta(key: string): Category {
+  return CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[0] ?? DEFAULT_CATEGORIES[0]!;
+}
+
+export function isVideoPath(path: string | null | undefined) {
+  if (!path) return false;
+  return /\.(mp4|webm|mov|m4v|ogv)(\?|$)/i.test(path);
 }
 
 const SIGNED_TTL = 60 * 60 * 24 * 7;
@@ -91,11 +144,13 @@ export async function fetchPosts(): Promise<Post[]> {
   if (error) throw error;
   const rows = data ?? [];
   const allPhotos = rows.flatMap((r) => asArray<string>(r.photos));
+  const allVideos = rows.flatMap((r) => asArray<string>((r as { videos?: unknown }).videos));
   const banners = rows.map((r) => (r as { banner?: string | null }).banner).filter(Boolean) as string[];
-  const signed = await signMedia([...allPhotos, ...banners]);
+  const signed = await signMedia([...allPhotos, ...allVideos, ...banners]);
   return sortPosts(
     rows.map((r) => {
       const photos = asArray<string>(r.photos);
+      const videos = asArray<string>((r as { videos?: unknown }).videos);
       const banner = (r as { banner?: string | null }).banner ?? null;
       return {
         id: r.id,
@@ -106,6 +161,8 @@ export async function fetchPosts(): Promise<Post[]> {
         log_time: r.log_time,
         photos,
         photoUrls: photos.map((p) => signed[p] ?? p),
+        videos,
+        videoUrls: videos.map((p) => signed[p] ?? p),
         banner,
         bannerUrl: banner ? (signed[banner] ?? banner) : null,
         links: asArray<PostLink>(r.links),

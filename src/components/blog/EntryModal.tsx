@@ -1,11 +1,12 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Markdown } from "@/components/blog/Markdown";
-import { categoryMeta, embedInfo, formatDate, type Post } from "@/lib/blog";
+import { categoryMeta, embedInfo, formatDate, isVideoPath, type Post } from "@/lib/blog";
 
 export function EntryModal({
   post,
   editMode,
   onClose,
+  onEdit,
   onTogglePin,
   onRemove,
   onTogglePublish,
@@ -13,6 +14,7 @@ export function EntryModal({
   post: Post | null;
   editMode: boolean;
   onClose: () => void;
+  onEdit: (post: Post) => void;
   onTogglePin: (post: Post) => void;
   onRemove: (post: Post) => void;
   onTogglePublish: (post: Post) => void;
@@ -33,19 +35,40 @@ export function EntryModal({
             {post.pinned && (
               <>
                 <span className="text-hairline">/</span>
-                <span>Featured</span>
+                <span>Pinned</span>
               </>
             )}
           </div>
 
           <h2 className="hand mt-3 text-4xl leading-tight text-ink">{post.title}</h2>
 
-          {post.bannerUrl && (
+          {post.bannerUrl && isVideoPath(post.banner) ? (
+            <video
+              src={post.bannerUrl}
+              controls
+              playsInline
+              className="mt-5 max-h-72 w-full rounded-xl border border-hairline bg-black object-cover"
+            />
+          ) : post.bannerUrl ? (
             <img
               src={post.bannerUrl}
               alt=""
               className="mt-5 h-48 w-full rounded-xl border border-hairline object-cover sm:h-64"
             />
+          ) : null}
+
+          {post.videoUrls.length > 0 && (
+            <div className="mt-6 space-y-3">
+              {post.videoUrls.map((url) => (
+                <video
+                  key={url}
+                  src={url}
+                  controls
+                  playsInline
+                  className="w-full rounded-lg border border-hairline bg-black"
+                />
+              ))}
+            </div>
           )}
 
           {post.photoUrls.length > 0 && (
@@ -111,6 +134,13 @@ export function EntryModal({
             <div className="mt-8 flex flex-wrap gap-3 border-t border-hairline pt-5">
               <button
                 type="button"
+                onClick={() => onEdit(post)}
+                className="meta rounded-full bg-ink px-4 py-2 text-background hover:opacity-85"
+              >
+                Edit entry
+              </button>
+              <button
+                type="button"
                 onClick={() => onTogglePublish(post)}
                 className="meta rounded-full border border-hairline px-4 py-2 text-ink hover:bg-secondary"
               >
@@ -121,7 +151,7 @@ export function EntryModal({
                 onClick={() => onTogglePin(post)}
                 className="meta rounded-full border border-hairline px-4 py-2 text-ink hover:bg-secondary"
               >
-                {post.pinned ? "Unfeature this entry" : "Feature this entry"}
+                {post.pinned ? "Unpin this log" : "Pin this log"}
               </button>
               <button
                 type="button"
