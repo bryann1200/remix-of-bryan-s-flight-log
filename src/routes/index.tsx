@@ -54,16 +54,21 @@ function Index() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+      qc.invalidateQueries({ queryKey: ["posts"] });
+    });
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [qc]);
 
   const editMode = !!session;
 
   const postsQuery = useQuery({ queryKey: ["posts"], queryFn: fetchPosts });
   const bannerQuery = useQuery({ queryKey: ["banner"], queryFn: fetchBanner });
 
-  const posts = useMemo(() => postsQuery.data ?? [], [postsQuery.data]);
+  const allPosts = useMemo(() => postsQuery.data ?? [], [postsQuery.data]);
+  const posts = useMemo(() => allPosts.filter((p) => p.published), [allPosts]);
+  const drafts = useMemo(() => allPosts.filter((p) => !p.published), [allPosts]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -77,21 +82,26 @@ function Index() {
     return order === "new" ? list : [...list].reverse();
   }, [posts, cat, query, order]);
 
-  const stats = useMemo(() => {
-    const counts = CATEGORIES.map((c) => ({
-      label: c.label,
-      dot: c.dot,
-      value: posts.filter((p) => p.category === c.key).length,
-    }));
-    const latest = posts.reduce<Post | null>((acc, p) => {
+  const latest = useMemo(() => {
+    return posts.reduce<Post | null>((acc, p) => {
       if (!acc) return p;
       return `${p.log_date}${p.log_time ?? ""}` > `${acc.log_date}${acc.log_time ?? ""}` ? p : acc;
     }, null);
-    return { counts, latest };
   }, [posts]);
 
   function refresh() {
     qc.invalidateQueries({ queryKey: ["posts"] });
+  }
+
+  async function publishPost(post: Post) {
+    await supabase.from("posts").update({ published: true }).eq("id", post.id);
+    refresh();
+  }
+
+  async function unpublishPost(post: Post) {
+    await supabase.from("posts").update({ published: false }).eq("id", post.id);
+    setActive(null);
+    refresh();
   }
 
   async function removePost(post: Post) {
