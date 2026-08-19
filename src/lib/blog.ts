@@ -13,6 +13,8 @@ export type Post = {
   log_time: string | null;
   photos: string[];
   photoUrls: string[];
+  banner: string | null;
+  bannerUrl: string | null;
   links: PostLink[];
   embed_url: string | null;
   pinned: boolean;
@@ -89,10 +91,12 @@ export async function fetchPosts(): Promise<Post[]> {
   if (error) throw error;
   const rows = data ?? [];
   const allPhotos = rows.flatMap((r) => asArray<string>(r.photos));
-  const signed = await signMedia(allPhotos);
+  const banners = rows.map((r) => (r as { banner?: string | null }).banner).filter(Boolean) as string[];
+  const signed = await signMedia([...allPhotos, ...banners]);
   return sortPosts(
     rows.map((r) => {
       const photos = asArray<string>(r.photos);
+      const banner = (r as { banner?: string | null }).banner ?? null;
       return {
         id: r.id,
         title: r.title,
@@ -102,6 +106,8 @@ export async function fetchPosts(): Promise<Post[]> {
         log_time: r.log_time,
         photos,
         photoUrls: photos.map((p) => signed[p] ?? p),
+        banner,
+        bannerUrl: banner ? (signed[banner] ?? banner) : null,
         links: asArray<PostLink>(r.links),
         embed_url: r.embed_url,
         pinned: r.pinned,
