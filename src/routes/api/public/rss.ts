@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/public/rss")({
 
         const { data, error } = await supabase
           .from("posts")
-          .select("id,title,category,body,log_date,log_time,pinned,created_at");
+          .select("id,title,category,body,log_date,log_time,pinned,published,created_at");
 
         if (error) return new Response("Feed unavailable", { status: 500 });
 
