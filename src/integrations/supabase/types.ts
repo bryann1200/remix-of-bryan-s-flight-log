@@ -64,16 +64,25 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          avatar_url: string | null
           banner_url: string | null
+          bio: string | null
           id: number
+          socials: Json
         }
         Insert: {
+          avatar_url?: string | null
           banner_url?: string | null
+          bio?: string | null
           id?: number
+          socials?: Json
         }
         Update: {
+          avatar_url?: string | null
           banner_url?: string | null
+          bio?: string | null
           id?: number
+          socials?: Json
         }
         Relationships: []
       }
@@ -82,7 +91,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_owner: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

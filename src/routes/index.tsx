@@ -3,12 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import {
   fetchBanner,
   fetchPosts,
   formatDate,
   uploadMedia,
+  isOwnerEmail,
   type Post,
 } from "@/lib/blog";
 import { HeroFlightPath } from "@/components/blog/HeroFlightPath";
@@ -40,6 +42,7 @@ function Index() {
   const qc = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
+  const [denied, setDenied] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [active, setActive] = useState<Post | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
@@ -47,15 +50,28 @@ function Index() {
   const bannerInput = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    supabase.auth.getSession().then(({ data }) => {
+      const s = data.session;
+      if (s && !isOwnerEmail(s.user?.email)) {
+        void supabase.auth.signOut();
+        return;
+      }
+      setSession(s);
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (s && !isOwnerEmail(s.user?.email)) {
+        setSession(null);
+        void supabase.auth.signOut();
+        setDenied(true);
+        return;
+      }
       setSession(s);
       qc.invalidateQueries({ queryKey: ["posts"] });
     });
     return () => sub.subscription.unsubscribe();
   }, [qc]);
 
-  const editMode = !!session;
+  const editMode = isOwnerEmail(session?.user?.email);
 
   const postsQuery = useQuery({ queryKey: ["posts"], queryFn: fetchPosts });
   const bannerQuery = useQuery({ queryKey: ["banner"], queryFn: fetchBanner });
@@ -114,6 +130,9 @@ function Index() {
             Bryan&rsquo;s Adventures
           </a>
           <div className="flex items-center gap-2">
+            <Link to="/about" className="meta px-2 text-ink-soft transition-colors hover:text-ink">
+              About
+            </Link>
             {editMode && (
               <button
                 type="button"
@@ -289,6 +308,9 @@ function Index() {
       <footer className="border-t border-hairline">
         <div className="mx-auto max-w-6xl px-5 py-10">
           <p className="text-sm font-medium text-ink">{TITLE}</p>
+          <Link to="/about" className="meta mt-2 inline-block text-ink-soft hover:text-ink">
+            About
+          </Link>
         </div>
       </footer>
 
@@ -300,6 +322,14 @@ function Index() {
         onRemove={removePost}
         onTogglePublish={(p) => (p.published ? unpublishPost(p) : publishPost(p))}
       />
+      {denied && (
+        <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full border border-hairline bg-card px-5 py-3 text-sm text-ink shadow-lg">
+          That Google account can&rsquo;t write here.{" "}
+          <button type="button" onClick={() => setDenied(false)} className="meta ml-2 text-ink-soft hover:text-ink">
+            Dismiss
+          </button>
+        </div>
+      )}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <NewEntryModal open={newOpen} onClose={() => setNewOpen(false)} onSaved={refresh} />
     </div>

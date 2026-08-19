@@ -218,3 +218,51 @@ function escapeXml(value: string) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+
+export const OWNER_EMAIL = "minbryan77@gmail.com";
+
+export function isOwnerEmail(email: string | null | undefined) {
+  return (email ?? "").toLowerCase() === OWNER_EMAIL;
+}
+
+export type SocialLink = { label: string; url: string };
+
+export type ProfileSettings = {
+  bio: string;
+  socials: SocialLink[];
+  avatarUrl: string | null;
+  avatarPath: string | null;
+};
+
+export async function fetchProfile(): Promise<ProfileSettings> {
+  const { data } = await supabase
+    .from("site_settings")
+    .select("bio, socials, avatar_url")
+    .eq("id", 1)
+    .maybeSingle();
+  const raw = (data?.socials ?? []) as unknown;
+  const socials = Array.isArray(raw)
+    ? (raw as SocialLink[]).filter((s) => s && s.url)
+    : [];
+  const avatarPath = data?.avatar_url ?? null;
+  let avatarUrl: string | null = null;
+  if (avatarPath) {
+    const signed = await signMedia([avatarPath]);
+    avatarUrl = signed[avatarPath] ?? null;
+  }
+  return { bio: data?.bio ?? "", socials, avatarUrl, avatarPath };
+}
+
+export async function saveProfile(input: {
+  bio: string;
+  socials: SocialLink[];
+  avatarPath: string | null;
+}) {
+  const { error } = await supabase.from("site_settings").upsert({
+    id: 1,
+    bio: input.bio,
+    socials: input.socials,
+    avatar_url: input.avatarPath,
+  });
+  if (error) throw error;
+}
