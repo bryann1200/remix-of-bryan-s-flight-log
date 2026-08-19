@@ -208,7 +208,7 @@ function About() {
             )}
             {profile?.bio ? (
               <div className="text-base leading-relaxed text-ink">
-                <Markdown source={profile.bio} />
+                <Markdown text={profile.bio} />
               </div>
             ) : (
               <p className="text-base text-ink-soft">
