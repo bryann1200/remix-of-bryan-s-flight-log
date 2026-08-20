@@ -1,6 +1,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Markdown } from "@/components/blog/Markdown";
 import { categoryMeta, embedInfo, formatDate, isVideoPath, type Post } from "@/lib/blog";
+import { ShareButton } from "@/components/blog/ShareButton";
 
 export function EntryModal({
   post,
@@ -130,9 +131,15 @@ export function EntryModal({
             </div>
           )}
 
-          {editMode && (
-            <div className="mt-8 flex flex-wrap gap-3 border-t border-hairline pt-5">
-              <button
+          <div className="mt-8 flex flex-wrap gap-3 border-t border-hairline pt-5">
+            <ShareButton
+              post={post}
+              label="Share card"
+              className="meta rounded-full border border-hairline px-4 py-2 text-ink hover:bg-secondary disabled:opacity-60"
+            />
+            {editMode && (
+              <>
+                <button
                 type="button"
                 onClick={() => onEdit(post)}
                 className="meta rounded-full bg-ink px-4 py-2 text-background hover:opacity-85"
@@ -160,8 +167,9 @@ export function EntryModal({
               >
                 Remove entry
               </button>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
