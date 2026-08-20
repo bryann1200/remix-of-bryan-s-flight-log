@@ -7,10 +7,12 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import {
   fetchBanner,
+  fetchCategories,
   fetchPosts,
   formatDate,
   uploadMedia,
   isOwnerEmail,
+  isVideoPath,
   type Post,
 } from "@/lib/blog";
 import { HeroFlightPath } from "@/components/blog/HeroFlightPath";
@@ -18,7 +20,8 @@ import { StickyNote } from "@/components/blog/StickyNote";
 import { FlightLines } from "@/components/blog/FlightLines";
 import { EntryModal } from "@/components/blog/EntryModal";
 import { AuthModal } from "@/components/blog/AuthModal";
-import { NewEntryModal } from "@/components/blog/NewEntryModal";
+import { EntryEditorModal } from "@/components/blog/EntryEditorModal";
+import { CategoryManager } from "@/components/blog/CategoryManager";
 
 const TITLE = "Bryan's Super Interesting Adventures";
 const DESCRIPTION =
@@ -44,6 +47,10 @@ function Index() {
   const [authOpen, setAuthOpen] = useState(false);
   const [denied, setDenied] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [catOpen, setCatOpen] = useState(false);
+  const [catFilter, setCatFilter] = useState<string>("all");
+  const [order, setOrder] = useState<"newest" | "oldest">("newest");
   const [active, setActive] = useState<Post | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
   const pins = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -75,12 +82,22 @@ function Index() {
 
   const postsQuery = useQuery({ queryKey: ["posts"], queryFn: fetchPosts });
   const bannerQuery = useQuery({ queryKey: ["banner"], queryFn: fetchBanner });
+  const categoriesQuery = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
+  const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
 
   const allPosts = useMemo(() => postsQuery.data ?? [], [postsQuery.data]);
   const posts = useMemo(() => allPosts.filter((p) => p.published), [allPosts]);
   const drafts = useMemo(() => allPosts.filter((p) => !p.published), [allPosts]);
 
-  const visible = posts;
+  const visible = useMemo(() => {
+    const list = posts.filter((p) => catFilter === "all" || p.category === catFilter);
+    const sorted = [...list].sort((a, b) => {
+      const ka = `${a.log_date} ${a.log_time ?? ""}`;
+      const kb = `${b.log_date} ${b.log_time ?? ""}`;
+      return order === "newest" ? kb.localeCompare(ka) : ka.localeCompare(kb);
+    });
+    return [...sorted.filter((p) => p.pinned), ...sorted.filter((p) => !p.pinned)];
+  }, [posts, catFilter, order]);
 
   function refresh() {
     qc.invalidateQueries({ queryKey: ["posts"] });
@@ -115,6 +132,11 @@ function Index() {
     const path = await uploadMedia(file);
     await supabase.from("site_settings").upsert({ id: 1, banner_url: path });
     qc.invalidateQueries({ queryKey: ["banner"] });
+  }
+
+  function startEdit(post: Post) {
+    setActive(null);
+    setEditingPost(post);
   }
 
   function scrollToBoard() {
