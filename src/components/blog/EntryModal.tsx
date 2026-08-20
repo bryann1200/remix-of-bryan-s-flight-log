@@ -1,6 +1,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Markdown } from "@/components/blog/Markdown";
 import { categoryMeta, embedInfo, formatDate, isVideoPath, type Post } from "@/lib/blog";
+import { ShareButton } from "@/components/blog/ShareButton";
 
 export function EntryModal({
   post,
