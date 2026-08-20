@@ -340,6 +340,7 @@ function Index() {
         post={active}
         editMode={editMode}
         onClose={() => setActive(null)}
+        onEdit={startEdit}
         onTogglePin={togglePin}
         onRemove={removePost}
         onTogglePublish={(p) => (p.published ? unpublishPost(p) : publishPost(p))}
@@ -353,7 +354,22 @@ function Index() {
         </div>
       )}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      <NewEntryModal open={newOpen} onClose={() => setNewOpen(false)} onSaved={refresh} />
+      <EntryEditorModal
+        open={newOpen || Boolean(editingPost)}
+        post={editingPost}
+        categories={categories}
+        onClose={() => {
+          setNewOpen(false);
+          setEditingPost(null);
+        }}
+        onSaved={refresh}
+      />
+      <CategoryManager
+        open={catOpen}
+        categories={categories}
+        onClose={() => setCatOpen(false)}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["categories"] })}
+      />
     </div>
   );
 }
