@@ -301,6 +301,41 @@ function Index() {
 
         {/* Corkboard */}
         <section id="board" className="mx-auto max-w-6xl px-5 py-12">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCatFilter("all")}
+              className={`meta rounded-full border px-3 py-1.5 transition-colors ${catFilter === "all" ? "border-ink text-ink" : "border-hairline text-ink-soft hover:text-ink"}`}
+            >
+              All
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => setCatFilter(c.key)}
+                className={`meta rounded-full border px-3 py-1.5 transition-colors ${catFilter === c.key ? "border-ink text-ink" : "border-hairline text-ink-soft hover:text-ink"}`}
+              >
+                {c.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setOrder(order === "newest" ? "oldest" : "newest")}
+              className="meta ml-auto rounded-full border border-hairline px-3 py-1.5 text-ink-soft hover:text-ink"
+            >
+              {order === "newest" ? "Newest first" : "Oldest first"}
+            </button>
+            {editMode && (
+              <button
+                type="button"
+                onClick={() => setCatOpen(true)}
+                className="meta rounded-full border border-hairline px-3 py-1.5 text-ink-soft hover:text-ink"
+              >
+                Categories
+              </button>
+            )}
+          </div>
           {postsQuery.isLoading ? (
             <p className="mt-10 text-sm text-ink-soft">Loading the board…</p>
           ) : visible.length === 0 ? (
