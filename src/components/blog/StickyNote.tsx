@@ -1,5 +1,6 @@
 import { categoryMeta, formatDate, isVideoPath, tiltFor, type Post } from "@/lib/blog";
 import { plainExcerpt } from "@/components/blog/Markdown";
+import { ShareButton } from "@/components/blog/ShareButton";
 
 type Props = {
   post: Post;
@@ -54,6 +55,11 @@ export function StickyNote({
         {post.pinned && (
           <span className="meta absolute right-4 top-3 text-ink-soft">Pinned</span>
         )}
+
+        <ShareButton
+          post={post}
+          className="meta absolute left-4 top-3 rounded-full border border-hairline bg-card/80 px-2 py-1 text-ink-soft opacity-0 transition-opacity duration-200 hover:text-ink focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-100"
+        />
 
         <div
           ref={pinRef}
