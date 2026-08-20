@@ -7,10 +7,12 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import {
   fetchBanner,
+  fetchCategories,
   fetchPosts,
   formatDate,
   uploadMedia,
   isOwnerEmail,
+  isVideoPath,
   type Post,
 } from "@/lib/blog";
 import { HeroFlightPath } from "@/components/blog/HeroFlightPath";
@@ -18,7 +20,8 @@ import { StickyNote } from "@/components/blog/StickyNote";
 import { FlightLines } from "@/components/blog/FlightLines";
 import { EntryModal } from "@/components/blog/EntryModal";
 import { AuthModal } from "@/components/blog/AuthModal";
-import { NewEntryModal } from "@/components/blog/NewEntryModal";
+import { EntryEditorModal } from "@/components/blog/EntryEditorModal";
+import { CategoryManager } from "@/components/blog/CategoryManager";
 
 const TITLE = "Bryan's Super Interesting Adventures";
 const DESCRIPTION =
@@ -44,6 +47,10 @@ function Index() {
   const [authOpen, setAuthOpen] = useState(false);
   const [denied, setDenied] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [catOpen, setCatOpen] = useState(false);
+  const [catFilter, setCatFilter] = useState<string>("all");
+  const [order, setOrder] = useState<"newest" | "oldest">("newest");
   const [active, setActive] = useState<Post | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
   const pins = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -75,12 +82,22 @@ function Index() {
 
   const postsQuery = useQuery({ queryKey: ["posts"], queryFn: fetchPosts });
   const bannerQuery = useQuery({ queryKey: ["banner"], queryFn: fetchBanner });
+  const categoriesQuery = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
+  const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
 
   const allPosts = useMemo(() => postsQuery.data ?? [], [postsQuery.data]);
   const posts = useMemo(() => allPosts.filter((p) => p.published), [allPosts]);
   const drafts = useMemo(() => allPosts.filter((p) => !p.published), [allPosts]);
 
-  const visible = posts;
+  const visible = useMemo(() => {
+    const list = posts.filter((p) => catFilter === "all" || p.category === catFilter);
+    const sorted = [...list].sort((a, b) => {
+      const ka = `${a.log_date} ${a.log_time ?? ""}`;
+      const kb = `${b.log_date} ${b.log_time ?? ""}`;
+      return order === "newest" ? kb.localeCompare(ka) : ka.localeCompare(kb);
+    });
+    return [...sorted.filter((p) => p.pinned), ...sorted.filter((p) => !p.pinned)];
+  }, [posts, catFilter, order]);
 
   function refresh() {
     qc.invalidateQueries({ queryKey: ["posts"] });
@@ -115,6 +132,11 @@ function Index() {
     const path = await uploadMedia(file);
     await supabase.from("site_settings").upsert({ id: 1, banner_url: path });
     qc.invalidateQueries({ queryKey: ["banner"] });
+  }
+
+  function startEdit(post: Post) {
+    setActive(null);
+    setEditingPost(post);
   }
 
   function scrollToBoard() {
@@ -165,7 +187,16 @@ function Index() {
         {(bannerQuery.data?.url || editMode) && (
           <section className="mx-auto max-w-6xl px-5 pt-6">
             <div className="relative overflow-hidden rounded-2xl border border-hairline bg-secondary">
-              {bannerQuery.data?.url ? (
+              {bannerQuery.data?.url && isVideoPath(bannerQuery.data.path) ? (
+                <video
+                  src={bannerQuery.data.url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="h-40 w-full object-cover sm:h-60"
+                />
+              ) : bannerQuery.data?.url ? (
                 <img
                   src={bannerQuery.data.url}
                   alt="Banner"
@@ -188,7 +219,7 @@ function Index() {
                   <input
                     ref={bannerInput}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     hidden
                     onChange={(e) => onBannerFile(e.target.files?.[0])}
                   />
@@ -270,6 +301,41 @@ function Index() {
 
         {/* Corkboard */}
         <section id="board" className="mx-auto max-w-6xl px-5 py-12">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCatFilter("all")}
+              className={`meta rounded-full border px-3 py-1.5 transition-colors ${catFilter === "all" ? "border-ink text-ink" : "border-hairline text-ink-soft hover:text-ink"}`}
+            >
+              All
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => setCatFilter(c.key)}
+                className={`meta rounded-full border px-3 py-1.5 transition-colors ${catFilter === c.key ? "border-ink text-ink" : "border-hairline text-ink-soft hover:text-ink"}`}
+              >
+                {c.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setOrder(order === "newest" ? "oldest" : "newest")}
+              className="meta ml-auto rounded-full border border-hairline px-3 py-1.5 text-ink-soft hover:text-ink"
+            >
+              {order === "newest" ? "Newest first" : "Oldest first"}
+            </button>
+            {editMode && (
+              <button
+                type="button"
+                onClick={() => setCatOpen(true)}
+                className="meta rounded-full border border-hairline px-3 py-1.5 text-ink-soft hover:text-ink"
+              >
+                Categories
+              </button>
+            )}
+          </div>
           {postsQuery.isLoading ? (
             <p className="mt-10 text-sm text-ink-soft">Loading the board…</p>
           ) : visible.length === 0 ? (
@@ -318,6 +384,7 @@ function Index() {
         post={active}
         editMode={editMode}
         onClose={() => setActive(null)}
+        onEdit={startEdit}
         onTogglePin={togglePin}
         onRemove={removePost}
         onTogglePublish={(p) => (p.published ? unpublishPost(p) : publishPost(p))}
@@ -331,7 +398,22 @@ function Index() {
         </div>
       )}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      <NewEntryModal open={newOpen} onClose={() => setNewOpen(false)} onSaved={refresh} />
+      <EntryEditorModal
+        open={newOpen || Boolean(editingPost)}
+        post={editingPost}
+        categories={categories}
+        onClose={() => {
+          setNewOpen(false);
+          setEditingPost(null);
+        }}
+        onSaved={refresh}
+      />
+      <CategoryManager
+        open={catOpen}
+        categories={categories}
+        onClose={() => setCatOpen(false)}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["categories"] })}
+      />
     </div>
   );
 }

@@ -65,8 +65,8 @@
 :root {
   --radius: 0.75rem;
 
-  /* paper white #FBFBFD */
-  --background: oklch(0.9884 0.0018 286.4);
+  /* warm yellow paper */
+  --background: oklch(0.977 0.021 95);
   /* ink black #1D1D1F */
   --foreground: oklch(0.2448 0.0027 286.1);
   --ink: oklch(0.2448 0.0027 286.1);
@@ -74,9 +74,9 @@
   --ink-soft: oklch(0.5473 0.0055 286.1);
   /* hairline #D2D2D7 */
   --hairline: oklch(0.8687 0.0043 286.3);
-  --cork: oklch(0.9884 0.0018 286.4);
+  --cork: oklch(0.966 0.03 94);
 
-  --card: oklch(1 0 0);
+  --card: oklch(0.992 0.011 96);
   --card-foreground: var(--ink);
   --popover: oklch(1 0 0);
   --popover-foreground: var(--ink);
