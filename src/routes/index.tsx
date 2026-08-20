@@ -187,7 +187,16 @@ function Index() {
         {(bannerQuery.data?.url || editMode) && (
           <section className="mx-auto max-w-6xl px-5 pt-6">
             <div className="relative overflow-hidden rounded-2xl border border-hairline bg-secondary">
-              {bannerQuery.data?.url ? (
+              {bannerQuery.data?.url && isVideoPath(bannerQuery.data.path) ? (
+                <video
+                  src={bannerQuery.data.url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="h-40 w-full object-cover sm:h-60"
+                />
+              ) : bannerQuery.data?.url ? (
                 <img
                   src={bannerQuery.data.url}
                   alt="Banner"
@@ -210,7 +219,7 @@ function Index() {
                   <input
                     ref={bannerInput}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     hidden
                     onChange={(e) => onBannerFile(e.target.files?.[0])}
                   />
