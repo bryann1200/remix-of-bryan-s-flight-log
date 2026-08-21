@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 import { OWNER_EMAIL } from "@/lib/blog";
+
+// The Lovable OAuth broker (/~oauth/initiate) only exists on *.lovable.app and
+// Lovable-managed custom domains. Anywhere else we use the standard Supabase
+// OAuth redirect/callback flow, which works on any host.
+function usesLovableBroker() {
+  if (typeof window === "undefined") return false;
+  return window.location.hostname.endsWith(".lovable.app");
+}
 
 export function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [busy, setBusy] = useState(false);
@@ -10,19 +19,29 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
   async function signIn() {
     setBusy(true);
     setError(null);
+
+    if (!usesLovableBroker()) {
+      const { error: err } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: { prompt: "select_account", login_hint: OWNER_EMAIL },
+        },
+      });
+      if (err) {
+        setBusy(false);
+        setError("Google sign-in failed. Please try again.");
+      }
+      return;
+    }
+
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
       extraParams: { prompt: "select_account", login_hint: OWNER_EMAIL },
     });
     if (result.error) {
       setBusy(false);
-      const notHosted =
-        typeof window !== "undefined" && !window.location.hostname.endsWith(".lovable.app");
-      setError(
-        notHosted
-          ? "Google sign-in only works on the published site, not on this host."
-          : "Google sign-in failed. Please try again.",
-      );
+      setError("Google sign-in failed. Please try again.");
       return;
     }
 
@@ -30,6 +49,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
     setBusy(false);
     onClose();
   }
+
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
