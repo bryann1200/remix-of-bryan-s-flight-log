@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as ApiPublicRssRouteImport } from './routes/api/public/rss'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicRssRoute = ApiPublicRssRouteImport.update({
   id: '/api/public/rss',
   path: '/api/public/rss',
@@ -32,30 +38,34 @@ const ApiPublicRssRoute = ApiPublicRssRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/public/rss': typeof ApiPublicRssRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/public/rss': typeof ApiPublicRssRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/public/rss': typeof ApiPublicRssRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/api/public/rss'
+  fullPaths: '/' | '/about' | '/auth/callback' | '/api/public/rss'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/api/public/rss'
-  id: '__root__' | '/' | '/about' | '/api/public/rss'
+  to: '/' | '/about' | '/auth/callback' | '/api/public/rss'
+  id: '__root__' | '/' | '/about' | '/auth/callback' | '/api/public/rss'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   ApiPublicRssRoute: typeof ApiPublicRssRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/rss': {
       id: '/api/public/rss'
       path: '/api/public/rss'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   ApiPublicRssRoute: ApiPublicRssRoute,
 }
 export const routeTree = rootRouteImport
