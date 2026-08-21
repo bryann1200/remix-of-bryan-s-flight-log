@@ -22,7 +22,6 @@ import { EntryModal } from "@/components/blog/EntryModal";
 import { AuthModal } from "@/components/blog/AuthModal";
 import { EntryEditorModal } from "@/components/blog/EntryEditorModal";
 import { CategoryManager } from "@/components/blog/CategoryManager";
-import bryanLogo from "@/assets/bryan-logo.png.asset.json";
 
 const TITLE = "Bryan's Super Interesting Adventures";
 const DESCRIPTION =
@@ -151,7 +150,7 @@ function Index() {
         <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <a href="#top" className="flex items-center">
             <img
-              src={bryanLogo.url}
+              src="/bryan-logo.webp"
               alt="Bryan's Adventures"
               className="h-9 w-auto rounded-md"
             />
