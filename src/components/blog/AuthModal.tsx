@@ -16,9 +16,16 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
     });
     if (result.error) {
       setBusy(false);
-      setError("Google sign-in failed. Please try again.");
+      const notHosted =
+        typeof window !== "undefined" && !window.location.hostname.endsWith(".lovable.app");
+      setError(
+        notHosted
+          ? "Google sign-in only works on the published site, not on this host."
+          : "Google sign-in failed. Please try again.",
+      );
       return;
     }
+
     if (result.redirected) return;
     setBusy(false);
     onClose();
