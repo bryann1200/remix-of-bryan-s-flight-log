@@ -78,15 +78,39 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Bryan's Super Interesting Adventures" },
+      { title: "Bryan Min — Super Interesting Adventures" },
       {
         name: "description",
         content:
-          "A personal log of AI ventures, volunteering, and personal growth, pinned to a corkboard.",
+          "The personal blog of Bryan Min — AI ventures, volunteering, and personal growth, pinned to a corkboard.",
       },
-      { name: "author", content: "Bryan" },
+      { name: "author", content: "Bryan Min" },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Bryan's Super Interesting Adventures" },
       { name: "twitter:card", content: "summary_large_image" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              name: "Bryan's Super Interesting Adventures",
+              alternateName: "Bryan Min",
+              url: "/",
+            },
+            {
+              "@type": "Person",
+              name: "Bryan Min",
+              url: "/about",
+              description:
+                "Bryan Min writes about AI ventures, volunteering, and personal growth.",
+            },
+          ],
+        }),
+      },
     ],
     links: [
       {

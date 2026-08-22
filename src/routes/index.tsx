@@ -24,19 +24,22 @@ import { EntryEditorModal } from "@/components/blog/EntryEditorModal";
 import { CategoryManager } from "@/components/blog/CategoryManager";
 
 const TITLE = "Bryan's Super Interesting Adventures";
+const SEO_TITLE = "Bryan Min — Super Interesting Adventures";
 const DESCRIPTION =
-  "A personal log of AI ventures, volunteering, and personal growth — pinned to a corkboard, one sticky note at a time.";
+  "The personal blog of Bryan Min — AI ventures, volunteering, and personal growth, pinned to a corkboard, one sticky note at a time.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: `${TITLE} — a personal log` },
+      { title: SEO_TITLE },
       { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
+      { property: "og:title", content: SEO_TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "/" }],
   }),
   component: Index,
 });
