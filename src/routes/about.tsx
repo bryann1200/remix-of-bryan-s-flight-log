@@ -13,9 +13,9 @@ import {
 } from "@/lib/blog";
 import { Markdown } from "@/components/blog/Markdown";
 
-const TITLE = "About Bryan";
+const TITLE = "About Bryan Min";
 const DESCRIPTION =
-  "Who Bryan is, what he is building, and where to find him across the internet.";
+  "Who Bryan Min is, what he is building, and where to find him across the internet.";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -25,8 +25,10 @@ export const Route = createFileRoute("/about")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "profile" },
+      { property: "og:url", content: "/about" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "canonical", href: "/about" }],
   }),
   component: About,
 });
@@ -202,7 +204,7 @@ function About() {
             {profile?.avatarUrl && (
               <img
                 src={profile.avatarUrl}
-                alt="Portrait of Bryan"
+                alt="Portrait of Bryan Min"
                 className="mb-8 h-40 w-40 rounded-2xl border border-hairline object-cover"
               />
             )}

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as ApiPublicRssRouteImport } from './routes/api/public/rss'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
@@ -38,12 +44,14 @@ const ApiPublicRssRoute = ApiPublicRssRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/public/rss': typeof ApiPublicRssRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/public/rss': typeof ApiPublicRssRoute
 }
@@ -51,20 +59,29 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/public/rss': typeof ApiPublicRssRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/auth/callback' | '/api/public/rss'
+  fullPaths:
+    '/' | '/about' | '/sitemap.xml' | '/auth/callback' | '/api/public/rss'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/auth/callback' | '/api/public/rss'
-  id: '__root__' | '/' | '/about' | '/auth/callback' | '/api/public/rss'
+  to: '/' | '/about' | '/sitemap.xml' | '/auth/callback' | '/api/public/rss'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/sitemap.xml'
+    | '/auth/callback'
+    | '/api/public/rss'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   ApiPublicRssRoute: typeof ApiPublicRssRoute
 }
@@ -83,6 +100,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -105,6 +129,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   ApiPublicRssRoute: ApiPublicRssRoute,
 }
